@@ -77,8 +77,8 @@ export function useLottery(signer, provider, account) {
                 playerList,         // 참가자 목록
                 open,               // 복권 오픈 상태
                 donated,            // 총 기부금
-                donationInfo,       // 기부 정보 (주소, 비율)
-                ownerAddress        // 컨트랙트 소유자
+                feeInfo,            // 수수료 정보 (winnerPct, donationPct, adminPct, charityAddr)
+                adminAddress        // 컨트랙트 관리자
             ] = await Promise.all([
                 contract.lotteryId(),
                 contract.getPrizePool(),
@@ -86,8 +86,8 @@ export function useLottery(signer, provider, account) {
                 contract.getPlayers(),
                 contract.lotteryOpen(),
                 contract.getTotalDonated(),
-                contract.getDonationInfo(),
-                contract.owner()
+                contract.getFeeInfo(),
+                contract.admin()
             ]);
 
             // 상태 업데이트
@@ -98,11 +98,12 @@ export function useLottery(signer, provider, account) {
             setPlayers(playerList);
             setIsLotteryOpen(open);
             setTotalDonated(ethers.formatEther(donated));
-            setCharityAddress(donationInfo[0]);
-            setDonationPercentage(Number(donationInfo[1]));
+            // feeInfo: [winnerPct, donationPct, adminPct, charityAddr]
+            setCharityAddress(feeInfo[3]);
+            setDonationPercentage(Number(feeInfo[1]));
 
             // 현재 사용자가 관리자인지 확인
-            setIsOwner(account?.toLowerCase() === ownerAddress.toLowerCase());
+            setIsOwner(account?.toLowerCase() === adminAddress.toLowerCase());
 
             console.log("📊 복권 정보 조회 완료");
 
@@ -127,19 +128,26 @@ export function useLottery(signer, provider, account) {
             const startId = Math.max(1, lotteryId - 10);
 
             for (let i = startId; i < lotteryId; i++) {
-                const [winner, prize, donation] = await Promise.all([
+                const [winner, guaranteedPrize, jackpotPrize, donation, jackpotWon] = await Promise.all([
                     contract.getWinner(i),
-                    contract.getPrizeAmount(i),
-                    contract.getDonationAmount(i)
+                    contract.getGuaranteedPrize(i),
+                    contract.getJackpotPrize(i),
+                    contract.getDonationAmount(i),
+                    contract.wasJackpotWon(i)
                 ]);
 
                 // 당첨자가 있는 경우만 추가 (0x0 주소가 아닌 경우)
                 if (winner !== ethers.ZeroAddress) {
+                    // 총 당첨금 = 보장 당첨금 + 잭팟 당첨금
+                    const totalPrize = BigInt(guaranteedPrize) + BigInt(jackpotPrize);
                     winners.push({
                         round: i,
                         winner: winner,
-                        prize: ethers.formatEther(prize),
-                        donation: ethers.formatEther(donation)
+                        prize: ethers.formatEther(totalPrize),
+                        guaranteedPrize: ethers.formatEther(guaranteedPrize),
+                        jackpotPrize: ethers.formatEther(jackpotPrize),
+                        donation: ethers.formatEther(donation),
+                        jackpotWon: jackpotWon
                     });
                 }
             }
@@ -278,12 +286,25 @@ export function useLottery(signer, provider, account) {
             fetchLotteryInfo(); // 정보 새로고침
         };
 
-        // 당첨자 선정 이벤트 구독
-        const handleWinner = (winner, id, prizeAmount) => {
-            console.log("🏆 당첨자 발표:", winner);
-            console.log("💰 당첨금:", ethers.formatEther(prizeAmount), "ETH");
+        // 보장 당첨 이벤트 구독
+        const handleGuaranteedWinner = (winner, id, prizeAmount) => {
+            console.log("🏆 보장 당첨자 발표:", winner);
+            console.log("💰 보장 당첨금:", ethers.formatEther(prizeAmount), "ETH");
             fetchLotteryInfo();
             fetchPastWinners();
+        };
+
+        // 잭팟 당첨 이벤트 구독
+        const handleJackpotWinner = (winner, id, jackpotAmount) => {
+            console.log("🎰 잭팟 당첨!:", winner);
+            console.log("💎 잭팟 당첨금:", ethers.formatEther(jackpotAmount), "ETH");
+            fetchLotteryInfo();
+        };
+
+        // 잭팟 미당첨 (이월) 이벤트 구독
+        const handleJackpotMiss = (id, carryOver) => {
+            console.log("📦 잭팟 이월:", ethers.formatEther(carryOver), "ETH");
+            fetchLotteryInfo();
         };
 
         // 기부 이벤트 구독
@@ -300,14 +321,18 @@ export function useLottery(signer, provider, account) {
 
         // 이벤트 리스너 등록
         contract.on("LotteryEnter", handleEnter);
-        contract.on("LotteryWinner", handleWinner);
+        contract.on("GuaranteedWinner", handleGuaranteedWinner);
+        contract.on("JackpotWinner", handleJackpotWinner);
+        contract.on("JackpotMiss", handleJackpotMiss);
         contract.on("DonationMade", handleDonation);
         contract.on("LotteryReset", handleReset);
 
         // 클린업: 컴포넌트 언마운트 시 리스너 제거
         return () => {
             contract.off("LotteryEnter", handleEnter);
-            contract.off("LotteryWinner", handleWinner);
+            contract.off("GuaranteedWinner", handleGuaranteedWinner);
+            contract.off("JackpotWinner", handleJackpotWinner);
+            contract.off("JackpotMiss", handleJackpotMiss);
             contract.off("DonationMade", handleDonation);
             contract.off("LotteryReset", handleReset);
         };

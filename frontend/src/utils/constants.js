@@ -19,13 +19,11 @@ export const CONTRACT_ADDRESS =
 // ============================================
 // 컨트랙트 ABI (Application Binary Interface)
 // ============================================
+// 하이브리드 복권 모델 (보장 50% + 잭팟 50%)
 // ABI는 스마트 컨트랙트의 함수들을 정의합니다.
-// 프론트엔드가 컨트랙트와 통신하려면 ABI가 필요합니다.
-// Remix에서 컴파일 후 ABI를 복사할 수 있습니다.
 export const CONTRACT_ABI = [
     // ========================================
     // 쓰기 함수 (Write Functions)
-    // 이 함수들은 블록체인 상태를 변경하므로 가스비가 필요합니다.
     // ========================================
 
     // 복권 참가 함수
@@ -33,7 +31,7 @@ export const CONTRACT_ABI = [
         "inputs": [],
         "name": "enter",
         "outputs": [],
-        "stateMutability": "payable",  // ETH를 받을 수 있음
+        "stateMutability": "payable",
         "type": "function"
     },
 
@@ -66,13 +64,12 @@ export const CONTRACT_ABI = [
 
     // ========================================
     // 읽기 함수 (Read Functions)
-    // view 함수는 가스비 없이 무료로 호출할 수 있습니다.
     // ========================================
 
-    // 컨트랙트 소유자 조회
+    // 관리자 주소 조회
     {
         "inputs": [],
-        "name": "owner",
+        "name": "admin",
         "outputs": [{"name": "", "type": "address"}],
         "stateMutability": "view",
         "type": "function"
@@ -114,12 +111,60 @@ export const CONTRACT_ABI = [
         "type": "function"
     },
 
-    // 현재 상금 풀 조회
+    // 현재 총 상금 풀 조회
     {
         "inputs": [],
         "name": "getPrizePool",
         "outputs": [{"name": "", "type": "uint256"}],
         "stateMutability": "view",
+        "type": "function"
+    },
+
+    // 현재 잭팟 풀 조회
+    {
+        "inputs": [],
+        "name": "getJackpotPool",
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+
+    // 현재 보장 당첨 풀 조회
+    {
+        "inputs": [],
+        "name": "getGuaranteedPool",
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+
+    // 전체 복권 정보 조회
+    {
+        "inputs": [],
+        "name": "getLotteryInfo",
+        "outputs": [
+            {"name": "currentLotteryId", "type": "uint256"},
+            {"name": "playerCount", "type": "uint256"},
+            {"name": "totalPool", "type": "uint256"},
+            {"name": "currentJackpot", "type": "uint256"},
+            {"name": "guaranteedPool", "type": "uint256"},
+            {"name": "isOpen", "type": "bool"}
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+
+    // 수수료 정보 조회
+    {
+        "inputs": [],
+        "name": "getFeeInfo",
+        "outputs": [
+            {"name": "winnerPct", "type": "uint256"},
+            {"name": "donationPct", "type": "uint256"},
+            {"name": "adminPct", "type": "uint256"},
+            {"name": "charityAddr", "type": "address"}
+        ],
+        "stateMutability": "pure",
         "type": "function"
     },
 
@@ -132,10 +177,19 @@ export const CONTRACT_ABI = [
         "type": "function"
     },
 
-    // 특정 라운드 당첨금 조회
+    // 특정 라운드 보장 당첨금 조회
     {
         "inputs": [{"name": "_lotteryId", "type": "uint256"}],
-        "name": "getPrizeAmount",
+        "name": "getGuaranteedPrize",
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+
+    // 특정 라운드 잭팟 당첨금 조회
+    {
+        "inputs": [{"name": "_lotteryId", "type": "uint256"}],
+        "name": "getJackpotPrize",
         "outputs": [{"name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
@@ -150,6 +204,15 @@ export const CONTRACT_ABI = [
         "type": "function"
     },
 
+    // 특정 라운드 잭팟 당첨 여부 조회
+    {
+        "inputs": [{"name": "_lotteryId", "type": "uint256"}],
+        "name": "wasJackpotWon",
+        "outputs": [{"name": "", "type": "bool"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+
     // 총 누적 기부금 조회
     {
         "inputs": [],
@@ -159,15 +222,12 @@ export const CONTRACT_ABI = [
         "type": "function"
     },
 
-    // 기부 정보 조회
+    // 총 누적 운영비 조회
     {
         "inputs": [],
-        "name": "getDonationInfo",
-        "outputs": [
-            {"name": "charityAddr", "type": "address"},
-            {"name": "percentage", "type": "uint256"}
-        ],
-        "stateMutability": "pure",
+        "name": "getTotalAdminFees",
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
         "type": "function"
     },
 
@@ -198,9 +258,35 @@ export const CONTRACT_ABI = [
         "type": "function"
     },
 
+    // 당첨자 비율 조회
+    {
+        "inputs": [],
+        "name": "WINNER_PERCENTAGE",
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+
+    // 운영비 비율 조회
+    {
+        "inputs": [],
+        "name": "ADMIN_FEE_PERCENTAGE",
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+
+    // 잭팟 풀 조회 (상태 변수)
+    {
+        "inputs": [],
+        "name": "jackpotPool",
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+
     // ========================================
     // 이벤트 (Events)
-    // 프론트엔드에서 구독하여 실시간 알림을 받을 수 있습니다.
     // ========================================
 
     // 복권 참가 이벤트
@@ -215,7 +301,7 @@ export const CONTRACT_ABI = [
         "type": "event"
     },
 
-    // 당첨자 선정 이벤트
+    // 보장 당첨 이벤트
     {
         "anonymous": false,
         "inputs": [
@@ -223,7 +309,30 @@ export const CONTRACT_ABI = [
             {"indexed": true, "name": "lotteryId", "type": "uint256"},
             {"indexed": false, "name": "prizeAmount", "type": "uint256"}
         ],
-        "name": "LotteryWinner",
+        "name": "GuaranteedWinner",
+        "type": "event"
+    },
+
+    // 잭팟 당첨 이벤트
+    {
+        "anonymous": false,
+        "inputs": [
+            {"indexed": true, "name": "winner", "type": "address"},
+            {"indexed": true, "name": "lotteryId", "type": "uint256"},
+            {"indexed": false, "name": "jackpotAmount", "type": "uint256"}
+        ],
+        "name": "JackpotWinner",
+        "type": "event"
+    },
+
+    // 잭팟 미당첨 (이월) 이벤트
+    {
+        "anonymous": false,
+        "inputs": [
+            {"indexed": true, "name": "lotteryId", "type": "uint256"},
+            {"indexed": false, "name": "jackpotPoolCarryOver", "type": "uint256"}
+        ],
+        "name": "JackpotMiss",
         "type": "event"
     },
 
@@ -236,6 +345,18 @@ export const CONTRACT_ABI = [
             {"indexed": false, "name": "amount", "type": "uint256"}
         ],
         "name": "DonationMade",
+        "type": "event"
+    },
+
+    // 운영비 수금 이벤트
+    {
+        "anonymous": false,
+        "inputs": [
+            {"indexed": true, "name": "admin", "type": "address"},
+            {"indexed": true, "name": "lotteryId", "type": "uint256"},
+            {"indexed": false, "name": "amount", "type": "uint256"}
+        ],
+        "name": "AdminFeeCollected",
         "type": "event"
     },
 
