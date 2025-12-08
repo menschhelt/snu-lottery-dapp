@@ -14,6 +14,8 @@ import React from 'react';
 function LotteryInfo({
     lotteryId,
     prizePool,
+    jackpotPool,
+    guaranteedPool,
     playersCount,
     isLotteryOpen
 }) {
@@ -38,9 +40,25 @@ function LotteryInfo({
 
                 {/* 상금 풀 */}
                 <div className="info-item highlight">
-                    <span className="info-label">💰 상금 풀</span>
+                    <span className="info-label">💰 총 상금 풀</span>
                     <span className="info-value prize">
                         {parseFloat(prizePool).toFixed(4)} ETH
+                    </span>
+                </div>
+
+                {/* 보장 당첨 풀 */}
+                <div className="info-item">
+                    <span className="info-label">🎯 보장 당첨 풀 (50%)</span>
+                    <span className="info-value">
+                        {parseFloat(guaranteedPool).toFixed(4)} ETH
+                    </span>
+                </div>
+
+                {/* 잭팟 풀 */}
+                <div className="info-item highlight">
+                    <span className="info-label">🎰 잭팟 풀 (10% 확률)</span>
+                    <span className="info-value prize">
+                        {parseFloat(jackpotPool).toFixed(4)} ETH
                     </span>
                 </div>
 

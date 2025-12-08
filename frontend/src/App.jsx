@@ -41,6 +41,8 @@ function App() {
     const {
         lotteryId,       // 현재 라운드
         prizePool,       // 상금 풀
+        jackpotPool,     // 잭팟 풀
+        guaranteedPool,  // 보장 당첨 풀
         playersCount,    // 참가자 수
         players,         // 참가자 목록
         isLotteryOpen,   // 복권 오픈 상태
@@ -107,6 +109,8 @@ function App() {
                         <LotteryInfo
                             lotteryId={lotteryId}
                             prizePool={prizePool}
+                            jackpotPool={jackpotPool}
+                            guaranteedPool={guaranteedPool}
                             playersCount={playersCount}
                             isLotteryOpen={isLotteryOpen}
                         />

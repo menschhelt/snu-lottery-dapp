@@ -21,6 +21,8 @@ export function useLottery(signer, provider, account) {
     // 복권 기본 정보
     const [lotteryId, setLotteryId] = useState(0);           // 현재 라운드 번호
     const [prizePool, setPrizePool] = useState("0");         // 현재 상금 풀 (ETH)
+    const [jackpotPool, setJackpotPool] = useState("0");     // 잭팟 풀 (ETH)
+    const [guaranteedPool, setGuaranteedPool] = useState("0"); // 보장 당첨 풀 (ETH)
     const [playersCount, setPlayersCount] = useState(0);     // 참가자 수
     const [players, setPlayers] = useState([]);              // 참가자 목록
     const [isLotteryOpen, setIsLotteryOpen] = useState(true); // 복권 오픈 상태
@@ -73,6 +75,8 @@ export function useLottery(signer, provider, account) {
             const [
                 id,                 // 현재 라운드 ID
                 pool,               // 상금 풀
+                jackpot,            // 잭팟 풀
+                guaranteed,         // 보장 당첨 풀
                 count,              // 참가자 수
                 playerList,         // 참가자 목록
                 open,               // 복권 오픈 상태
@@ -82,6 +86,8 @@ export function useLottery(signer, provider, account) {
             ] = await Promise.all([
                 contract.lotteryId(),
                 contract.getPrizePool(),
+                contract.getJackpotPool(),
+                contract.getGuaranteedPool(),
                 contract.getPlayersCount(),
                 contract.getPlayers(),
                 contract.lotteryOpen(),
@@ -94,6 +100,8 @@ export function useLottery(signer, provider, account) {
             setLotteryId(Number(id));
             // ethers.formatEther: wei를 ETH로 변환 (1 ETH = 10^18 wei)
             setPrizePool(ethers.formatEther(pool));
+            setJackpotPool(ethers.formatEther(jackpot));
+            setGuaranteedPool(ethers.formatEther(guaranteed));
             setPlayersCount(Number(count));
             setPlayers(playerList);
             setIsLotteryOpen(open);
@@ -360,6 +368,8 @@ export function useLottery(signer, provider, account) {
         // 복권 정보
         lotteryId,
         prizePool,
+        jackpotPool,
+        guaranteedPool,
         playersCount,
         players,
         isLotteryOpen,
