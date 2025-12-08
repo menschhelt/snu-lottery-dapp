@@ -53,7 +53,7 @@ contract Lottery is VRFConsumerBaseV2Plus {
     // --- Chainlink VRF 설정 (Sepolia) ---
     uint256 public s_subscriptionId;
     bytes32 public constant KEY_HASH = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
-    uint32 public constant CALLBACK_GAS_LIMIT = 200000;  // 가스 제한 증가 (하이브리드 로직)
+    uint32 public constant CALLBACK_GAS_LIMIT = 500000;  // 가스 제한 증가 (하이브리드 로직)
     uint16 public constant REQUEST_CONFIRMATIONS = 3;
     uint32 public constant NUM_WORDS = 2;  // 2개 난수 필요 (당첨자 선정 + 잭팟 확률)
 
