@@ -53,12 +53,14 @@ function LotteryActions({
                 <button
                     className={`btn btn-enter ${isLoading ? 'loading' : ''}`}
                     onClick={handleEnter}
-                    disabled={isLoading || !isLotteryOpen}
+                    disabled={isLoading || !isLotteryOpen || hasEntered}
                 >
                     {isLoading ? (
                         <>🔄 처리 중...</>
                     ) : !isLotteryOpen ? (
                         <>🔒 현재 추첨 중</>
+                    ) : hasEntered ? (
+                        <>✅ 이미 참가 완료</>
                     ) : (
                         <>🎫 복권 참가하기 (0.01 ETH)</>
                     )}
@@ -67,14 +69,14 @@ function LotteryActions({
                 {/* 참가 상태 */}
                 {hasEntered && (
                     <div className="entry-status">
-                        ✅ 이번 라운드에 {entryCount}번 참가했습니다!
+                        ✅ 이번 라운드에 참가 완료! 추첨을 기다려주세요.
                     </div>
                 )}
 
                 {/* 안내 메시지 */}
                 <div className="entry-info">
-                    <p>💡 한 지갑으로 여러 번 참가할 수 있습니다.</p>
-                    <p>💡 참가할수록 당첨 확률이 높아집니다!</p>
+                    <p>💡 라운드당 1회만 참가할 수 있습니다.</p>
+                    <p>💡 추첨 완료 후 다음 라운드에 다시 참가하세요!</p>
                 </div>
 
                 {/* 참가자 목록 토글 */}
