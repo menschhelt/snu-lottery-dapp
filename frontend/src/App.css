@@ -157,6 +157,26 @@ body {
     margin-bottom: 15px;
 }
 
+.faucet-info {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: var(--text-secondary);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+.faucet-info a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.faucet-info a:hover {
+    text-decoration: underline;
+}
+
 /* ============================================
    버튼 스타일
    ============================================ */

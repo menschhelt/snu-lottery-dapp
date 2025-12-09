@@ -95,6 +95,20 @@ function WalletConnect({
                     MetaMask에서 네트워크를 Sepolia로 변경하세요.
                 </div>
             )}
+
+            {/* Sepolia ETH Faucet 안내 */}
+            {isConnected && isCorrectNetwork && (
+                <div className="faucet-info">
+                    💡 테스트용 Sepolia ETH가 필요하신가요?{' '}
+                    <a
+                        href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Google Faucet에서 무료로 받기
+                    </a>
+                </div>
+            )}
         </div>
     );
 }
